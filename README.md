@@ -1,4 +1,4 @@
-# allego-package
+# allego-composer-package
 
 這是練習用來自己撰寫 Composer 套件的專案
 
