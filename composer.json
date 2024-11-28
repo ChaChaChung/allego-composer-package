@@ -13,7 +13,8 @@
     },
     "autoload": {
         "psr-4": {
-          "Test\\Package\\": "packages/test/package/src/"
+          "Test\\Package\\": "packages/test/package/src/",
+          "Practice\\Package\\": "packages/practice/package/src/"
         }
     },
     "minimum-stability": "stable",
