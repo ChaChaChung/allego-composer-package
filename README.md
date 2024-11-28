@@ -1,0 +1,1 @@
+# allego-composer-package
