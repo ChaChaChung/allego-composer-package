@@ -1,0 +1,15 @@
+{
+    "name": "alleg/package",
+    "autoload": {
+        "psr-4": {
+            "Practice\\Package\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Allego",
+            "email": "allego02272@gmail.com"
+        }
+    ],
+    "require": {}
+}

@@ -1,0 +1,21 @@
+{
+    "name": "allego/package",
+    "type": "project",
+    "description": "This is the package mantain by Allego.",
+    "license": "MIT",
+    "require": {
+        "php": "^8.3",
+        "laravel/framework": "^10.10",
+        "laravel/tinker": "^2.8",
+        "laravel/ui": "^4.5"
+    },
+    "require-dev": {
+    },
+    "autoload": {
+        "psr-4": {
+          "Test\\Package\\": "packages/test/package/src/"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
