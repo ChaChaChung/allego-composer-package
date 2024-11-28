@@ -1,5 +1,5 @@
 {
-    "name": "allego/composer-package",
+    "name": "allego/package",
     "type": "project",
     "description": "This is the package mantain by Allego.",
     "license": "MIT",
