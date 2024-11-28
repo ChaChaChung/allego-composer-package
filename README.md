@@ -7,7 +7,7 @@ This is the project which is use to practice develop composer package by myself.
 ## 環境需求 Environment 
 * composer ^2.8.x
 * php ^8.3.x
-* laravel ^10.10.x
+* laravel ^10.x
 
 ## 安裝方式 Install
 
