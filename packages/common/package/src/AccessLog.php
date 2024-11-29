@@ -3,6 +3,7 @@
 namespace Common\Package;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\GlobalFunc\CTL_G_Helper;
 
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
@@ -16,7 +17,10 @@ class AccessLog extends Controller
         return 'AccessLog';
     }
 
-    protected static function checkAndCreateTable()
+    /**
+     * 檢查 access_log 資料表是否存在
+     */
+    protected static function CheckAndCreateTable()
     {
         try {
             $return_text = '';
@@ -50,59 +54,6 @@ class AccessLog extends Controller
         }
     }
 
-    public static function WriteAccessLog($log)
-    {
-        $return_text = '';
-        try {
-            $return_text = self::checkAndCreateTable();
-
-            // 先處理可能不存在的資料 ===================================================
-            $log_type = $log->log_type ;
-            $company_sid = $log->company_sid ;
-            $access_sid = isset($log->access_sid) ? $log->access_sid : 0 ;
-            // $access_ip = $log->access_ip ;
-            $func_name = isset($log->func_name) ? $log->func_name : "" ;
-            $state_flag = isset($log->state_flag) ? $log->state_flag : "N" ;
-            $state_text = isset($log->state_text) ? $log->state_text : "" ;
-            // ========================================================================
-
-            $try_count = 0 ;
-            $try_max_count = 3 ;    // 最大嘗試次數
-            $append_success = false ;
-            do {
-                $try_count += 1 ;
-                try{
-                    $log_sid = uniqid(date('Ymd-')) ;
-
-                    MDL_Access_Log::insert([
-                        'SID'           => $log_sid ,
-                        'log_type'      => $log_type,
-                        'company_sid'   => $company_sid,
-                        'access_sid'    => $access_sid,
-                        // 'access_ip'     => $access_ip,
-                        'func_name'     => $func_name,
-                        'state_flag'    => $state_flag,
-                        'state_text'    => $state_text,
-                        'created_time'  => date('Y-m-d H:i:s')
-                    ]);
-                    // 若成功，直接離開
-                    $append_success = true ;
-                    break ;
-                }catch(\Throwable $e)   {
-                    if ( $try_count >= $try_max_count ){
-                        throw new \Exception("Too Many try write to access_log fail => \n" . $e->getMessage());
-                    }
-                }
-            } while ( $try_count < $try_max_count && !$append_success );
-    
-            return $return_text;
-        } catch (\Exception $e) {
-            $return_text = $e->getMessage();
-        } finally {
-            return $return_text;
-        }
-    }
-
     /**
      * 初始化要記錄的 Log 內容並寫入資料庫
      * @param string  $log_type    // Log 類型
@@ -112,29 +63,86 @@ class AccessLog extends Controller
      * @param int     $company_sid // Log 的組織 SID
      * @param int     $user_sid    // Log 的使用者 SID
      */
-    public static function LogHandle($log_type, $func_name, $state_flag, $state_text, $company_sid = null, $user_sid = null)
-    {
+    public static function LogHandle(
+        $log_type, $func_name, $state_flag, $state_text, $company_sid = null, $user_sid = null
+    ) {
         $func_name = __FUNCTION__;
         try {
             // 取得記錄者資料
             $company_sid = isset($company_sid) ? $company_sid : 0;
             $user_sid = isset($user_sid) ? $user_sid : 0;
+            $access_ip = CTL_G_Helper::Get_Access_IP();
 
             // 將要存到 access_log 的資料寫到一包 Object 內
-            $data = new \stdClass();
-            $data->log_type    = $log_type;
-            $data->company_sid = $company_sid;
-            $data->access_sid  = $user_sid;
-            $data->func_name   = $func_name;
-            $data->state_flag  = $state_flag ? 'S' : 'F';
-            $data->state_text  = "#$user_sid# $state_text";
+            $log_data = new \stdClass();
+            $log_data->log_type    = $log_type;
+            $log_data->company_sid = $company_sid;
+            $log_data->access_sid  = $user_sid;
+            $log_data->access_ip   = $access_ip;
+            $log_data->func_name   = $func_name;
+            $log_data->state_flag  = $state_flag ? 'S' : 'F';
+            $log_data->state_text  = "#$user_sid# $state_text";
 
             // 寫入 Log
-            self::WriteAccessLog($data);
+            self::WriteAccessLog($log_data);
         } catch (\Throwable $e) {
             // 拋出例外
             throw new \Exception("[$func_name] Fail => " . $e->getMessage());
         }
     }
 
+    /**
+     * 寫入 access_log 資料表
+     * @param object $log_data
+     */
+    public static function WriteAccessLog($log_data)
+    {
+        try {
+            // 檢查 access_log 資料表是否存在
+            self::CheckAndCreateTable();
+
+            // 先處理可能不存在的資料 ===================================================
+            $log_type    = isset($log_data->log_type) ? $log_data->log_type : "X" ;
+            $company_sid = isset($log_data->company_sid) ? $log_data->company_sid : 0 ;
+            $access_sid  = isset($log_data->access_sid) ? $log_data->access_sid : 0 ;
+            $access_ip   = isset($log_data->access_ip) ? $log_data->access_ip : "" ;
+            $func_name   = isset($log_data->func_name) ? $log_data->func_name : "" ;
+            $state_flag  = isset($log_data->state_flag) ? $log_data->state_flag : "N" ;
+            $state_text  = isset($log_data->state_text) ? $log_data->state_text : "" ;
+            // ========================================================================
+
+            $try_count = 0 ; // 目前嘗試次數
+            $try_max_count = 3 ; // 最大嘗試次數
+            $append_success = false ; // 是否成功寫入
+            do {
+                $try_count += 1 ;
+                try {
+                    $log_sid = uniqid(date('Ymd-')) ;
+
+                    MDL_Access_Log::insert([
+                        'SID'          => $log_sid ,
+                        'log_type'     => $log_type,
+                        'company_sid'  => $company_sid,
+                        'access_sid'   => $access_sid,
+                        'access_ip'    => $access_ip,
+                        'func_name'    => $func_name,
+                        'state_flag'   => $state_flag,
+                        'state_text'   => $state_text,
+                        'created_time' => date('Y-m-d H:i:s')
+                    ]);
+
+                    // 若成功，直接離開
+                    $append_success = true ;
+
+                    break ;
+                } catch(\Throwable $e) {
+                    if ($try_count >= $try_max_count) {
+                        throw new \Exception("Too Many try write to access_log fail => \n" . $e->getMessage());
+                    }
+                }
+            } while ($try_count < $try_max_count && !$append_success);
+        } catch (\Exception $e) {
+            throw new \Exception('Write access_log to DB Fail => ' . $e->getMessage());
+        }
+    }
 }
