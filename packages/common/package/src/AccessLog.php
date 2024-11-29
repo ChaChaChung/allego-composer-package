@@ -23,10 +23,18 @@ class AccessLog extends Controller
             if (!Schema::hasTable('access_log')) {
                 // 創建資料表
                 Schema::create('access_log', function (Blueprint $table) {
-                    $table->id();
-                    $table->string('user'); // 範例欄位
-                    $table->string('action'); // 範例欄位
-                    $table->timestamps(); // created_at 和 updated_at
+                    $table->string('SID', 30); // varchar(30)
+                    $table->char('log_type', 1); // char(1)
+                    $table->integer('company_sid')->nullable(); // int(11) NULL
+                    $table->string('access_sid', 100)->nullable(); // varchar(100) NULL
+                    $table->string('access_ip', 100)->nullable(); // varchar(100) NULL
+                    $table->string('func_name', 100)->nullable(); // varchar(100) NULL
+                    $table->char('state_flag', 1)->default('N'); // char(1) with default 'N'
+                    $table->longText('state_text')->nullable(); // longtext
+                    $table->timestamp('created_time')->useCurrent(); // timestamp with default CURRENT_TIMESTAMP
+
+                    // 設定主鍵
+                    $table->primary('SID'); // SID 為主鍵
                 });
     
                 $return_text = 'Table "access_log" created successfully.';
