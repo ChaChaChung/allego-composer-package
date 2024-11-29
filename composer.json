@@ -28,7 +28,8 @@
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
             "Test\\Package\\": "packages/test/package/src/",
-            "Practice\\Package\\": "packages/practice/package/src/"
+            "Practice\\Package\\": "packages/practice/package/src/",
+            "Common\\Package\\": "packages/common/package/src/"
         }
     },
     "autoload-dev": {
