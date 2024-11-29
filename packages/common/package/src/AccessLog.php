@@ -4,10 +4,10 @@ namespace Common\Package;
 
 use App\Http\Controllers\Controller;
 
-class CTL_Access_Log extends Controller
+class AccessLog extends Controller
 {
-    public static function Common()
+    public static function AccessLog()
     {
-        return 'Common';
+        return 'AccessLog';
     }
 }
