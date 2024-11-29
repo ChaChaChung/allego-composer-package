@@ -68,7 +68,6 @@ class AccessLog extends Controller
     public static function LogHandle(
         $log_type, $func_name, $state_flag, $state_text, $user_sid = null
     ) {
-        $func_name = __FUNCTION__;
         try {
             // 取得記錄者資料
             $company_sid = 0;
@@ -103,7 +102,7 @@ class AccessLog extends Controller
             self::WriteAccessLog($log_data);
         } catch (\Throwable $e) {
             // 拋出例外
-            throw new \Exception("[$func_name] Fail => " . $e->getMessage());
+            throw new \Exception('[LogHandle] Fail => ' . $e->getMessage());
         }
     }
 
