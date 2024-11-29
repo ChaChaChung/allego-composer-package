@@ -30,9 +30,9 @@ class AccessLog extends Controller
                 });
     
                 $return_text = 'Table "access_log" created successfully.';
+            } else {
+                $return_text = 'Table "access_log" already exists.';
             }
-    
-            $return_text = 'Table "access_log" already exists.';
 
             return $return_text;
         } catch (\Exception $e) {
