@@ -59,11 +59,11 @@ class AccessLog extends Controller
             // 先處理可能不存在的資料 ===================================================
             $log_type = $log->log_type ;
             $company_sid = $log->company_sid ;
-            $access_sid = isset($data->access_sid) ? $data->access_sid : 0 ;
+            $access_sid = isset($log->access_sid) ? $log->access_sid : 0 ;
             // $access_ip = $log->access_ip ;
-            $func_name = isset($data->func_name) ? $data->func_name : "" ;
-            $state_flag = isset($data->state_flag) ? $data->state_flag : "N" ;
-            $state_text = isset($data->state_text) ? $data->state_text : "" ;
+            $func_name = isset($log->func_name) ? $log->func_name : "" ;
+            $state_flag = isset($log->state_flag) ? $log->state_flag : "N" ;
+            $state_text = isset($log->state_text) ? $log->state_text : "" ;
             // ========================================================================
 
             $try_count = 0 ;
@@ -73,7 +73,8 @@ class AccessLog extends Controller
                 $try_count += 1 ;
                 try{
                     $log_sid = uniqid(date('Ymd-')) ;
-                    $result = MDL_Access_Log::insert([
+
+                    MDL_Access_Log::insert([
                         'SID'           => $log_sid ,
                         'log_type'      => $log_type,
                         'company_sid'   => $company_sid,
