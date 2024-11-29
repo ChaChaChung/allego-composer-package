@@ -4,8 +4,10 @@ namespace Common\Package;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\GlobalFunc\CTL_G_Helper;
+use Common\Package\CommonGlobal;
 
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Database\Schema\Blueprint;
 
 use App\Models\MDL_Access_Log;
@@ -64,20 +66,34 @@ class AccessLog extends Controller
      * @param int     $user_sid    // Log 的使用者 SID
      */
     public static function LogHandle(
-        $log_type, $func_name, $state_flag, $state_text, $company_sid = null, $user_sid = null
+        $log_type, $func_name, $state_flag, $state_text, $user_sid = null
     ) {
         $func_name = __FUNCTION__;
         try {
             // 取得記錄者資料
-            $company_sid = isset($company_sid) ? $company_sid : 0;
-            $user_sid = isset($user_sid) ? $user_sid : 0;
+            $company_sid = 0;
+            $user_sid = isset($user_sid) ? $user_sid : 'X';
             $access_ip = CTL_G_Helper::Get_Access_IP();
+
+            // 給予部分初始值
+            if (CommonGlobal::$Terminal_SID !== '') {
+                // 若這部分有資料，應該是透過API來的，則讀取API資料項目
+                $log_type = 'A';
+                $company_sid = CommonGlobal::$Company_SID;
+                $access_sid = CommonGlobal::$Terminal_SID;
+            } else {
+                // 經由 Session讀取資料
+                $log_type = 'F';
+                $company_sid = Intval(Session::get('company_sid', 0), 0);
+                $user_sid = Session::get('user_sid', 'X');
+                $access_sid = $user_sid;
+            }
 
             // 將要存到 access_log 的資料寫到一包 Object 內
             $log_data = new \stdClass();
             $log_data->log_type    = $log_type;
             $log_data->company_sid = $company_sid;
-            $log_data->access_sid  = $user_sid;
+            $log_data->access_sid  = $access_sid;
             $log_data->access_ip   = $access_ip;
             $log_data->func_name   = $func_name;
             $log_data->state_flag  = $state_flag ? 'S' : 'F';
@@ -104,7 +120,7 @@ class AccessLog extends Controller
             // 先處理可能不存在的資料 ===================================================
             $log_type    = isset($log_data->log_type) ? $log_data->log_type : "X" ;
             $company_sid = isset($log_data->company_sid) ? $log_data->company_sid : 0 ;
-            $access_sid  = isset($log_data->access_sid) ? $log_data->access_sid : 0 ;
+            $access_sid  = isset($log_data->access_sid) ? $log_data->access_sid : "X" ;
             $access_ip   = isset($log_data->access_ip) ? $log_data->access_ip : "" ;
             $func_name   = isset($log_data->func_name) ? $log_data->func_name : "" ;
             $state_flag  = isset($log_data->state_flag) ? $log_data->state_flag : "N" ;
